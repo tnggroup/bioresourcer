@@ -5,8 +5,8 @@
 SELECT 
 jt.alias_matched AS Aliases,
 p.id AS 'Participant id', 
-p.first_name AS Forename,
-p.last_name AS Surname, 
+p.first_name AS forename,
+p.last_name AS surname, 
 p.email AS 'Email address',
 p.phone AS 'Phone number',
 p.registered_at, 
@@ -14,7 +14,7 @@ cfr.created_at AS consented
 
 FROM participants p
 CROSS JOIN JSON_TABLE(p.aliases, '$[*]' COLUMNS(alias_matched VARCHAR(255) PATH '$')) AS jt
-JOIN participant_study ps ON ps.id = p.id
+JOIN participant_study ps ON ps.participant_id = p.id
 LEFT JOIN consent_form_responses cfr ON cfr.participant_id = p.id 
 LEFT JOIN consent_forms cf ON cf.id = cfr.consent_form_id AND cf.study_id = ps.study_id
 LEFT JOIN communications c ON c.participant_id = p.id AND c.study_id = ps.study_id
@@ -24,8 +24,8 @@ WHERE p.account_type = 'Active'
 AND jt.alias_matched REGEXP '^GLAD[0-9]{6}$'
 AND (p.first_name NOT LIKE 'test%' OR p.last_name NOT LIKE 'test%')
 AND cfr.created_at IS NULL #has NOT consented
-AND c.sent_at IS NULL #has NOT already received a reminder (check this)
-AND w.withdrew_at IS NULL #has NOT withdrawn (check this)
+AND c.sent_at IS NULL #has NOT already received a reminder 
+AND w.withdrew_at IS NULL #has NOT withdrawn 
 AND ps.study_id = 1 #GLAD
 
 ORDER BY Aliases

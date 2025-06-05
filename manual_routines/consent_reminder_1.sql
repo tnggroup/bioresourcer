@@ -15,13 +15,14 @@ ps.export_eligibility_state
 #c.type, 
 #c.number, 
 #c.sent_at
+#select jt.alias_matched AS Aliases,p.id,p.first_name,ps.id,cfr.id,cf.id,cremindersone.id
 
 FROM participants p
 CROSS JOIN JSON_TABLE(p.aliases, '$[*]' COLUMNS(alias_matched VARCHAR(255) PATH '$')) AS jt
-JOIN participant_study ps ON ps.id = p.id
+JOIN participant_study ps ON ps.participant_id = p.id
 LEFT JOIN consent_form_responses cfr ON cfr.participant_id = p.id 
 LEFT JOIN consent_forms cf ON cf.id = cfr.consent_form_id AND cf.study_id = ps.study_id
-LEFT JOIN communications c ON c.participant_id = p.id AND c.study_id = ps.study_id
+LEFT JOIN communications cremindersone ON cremindersone.participant_id = p.id AND cremindersone.study_id = ps.study_id AND cremindersone.type = 'Consent Reminder' AND cremindersone.number=1
 LEFT JOIN withdrawals w on w.participant_id = p.id AND w.study_id = ps.study_id
 
 WHERE p.account_type = 'Active'
@@ -29,9 +30,9 @@ AND ps.study_id = 1 #GLAD
 AND jt.alias_matched REGEXP '^GLAD[0-9]{6}$'
 AND (p.first_name NOT LIKE 'test%' OR p.last_name NOT LIKE 'test%')
 AND cfr.created_at IS NOT NULL #has consented
-AND COALESCE(ps.manual_eligibility_state, 0) = 0
-AND COALESCE(ps.export_eligibility_state, 0) = 0 #is not eligible (this needs to be looked at)
-AND c.type != 'Consent Reminder' #has NOT already received a reminder (this needs to be edited to be has not received the first consent reminder)
+AND ps.manual_eligibility_state IS NULL 
+AND ps.export_eligibility_state IS NULL #is not eligible (this needs to be looked at)
+AND cremindersone.id IS NULL #has NOT already received a reminder (this needs to be edited to be has not received the first consent reminder)
 AND w.withdrew_at IS NULL #has NOT withdrawn
 
 ORDER BY Aliases
