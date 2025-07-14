@@ -1,3 +1,4 @@
+#install with remotes::install_github('tnggroup/bioresourcer')
 
 bioresourcerClass <- setRefClass("bioresourcer",
                                       fields = list(
