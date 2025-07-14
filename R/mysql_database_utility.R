@@ -5,18 +5,20 @@ mysqlDatabaseUtilityClass <- setRefClass("pgDatabaseUtility",
                                                user = "character",
                                                host = "character",
                                                port = "numeric",
-                                               connection = "ANY"
+                                               connection = "ANY",
+                                               folderpathSql = "character"
                                              ),
                                              methods = list
                                              (
                                                #this is the constructor as per convention
-                                               initialize=function(dbname, host, user, port, password, group, askForPassword=F)
+                                               initialize=function(dbname, host, user, port, password, group, folderpathSql="SQL", askForPassword=F)
                                                {
 
                                                  group <<- group
                                                  host <<- host
                                                  user <<- user
                                                  port <<- port
+                                                 folderpathSql<<-folderpathSql
                                                  if(askForPassword){
                                                    connection <<- dbConnect(RMariaDB::MariaDB(), #RMySQL::MySQL()
                                                                             dbname = dbname,
@@ -67,7 +69,7 @@ mysqlDatabaseUtilityClass$methods(
 
     q <- dbExecute(connection,"DROP TEMPORARY TABLE IF EXISTS t_consented_alias")
 
-    qString<-fread(file = file.path("MySQL","shared.sql"), sep = NULL, header = F, strip.white = F, check.names = F,stringsAsFactors = F, encoding = "UTF-8",data.table = F) #stringsAsFactors = F, quote = ''
+    qString<-fread(file = file.path(folderpathSql,"shared.sql"), sep = NULL, header = F, strip.white = F, check.names = F,stringsAsFactors = F, encoding = "UTF-8",data.table = F) #stringsAsFactors = F, quote = ''
     qString2<-paste(unlist(qString),collapse = '\n')
 
     q <- dbExecute(connection,
@@ -102,7 +104,7 @@ mysqlDatabaseUtilityClass$methods(
 
     q <- dbExecute(connection,"DROP TEMPORARY TABLE IF EXISTS t_pid")
 
-    qString<-fread(file = file.path("MySQL","pid_generic.sql"), sep = NULL, header = F, strip.white = F, check.names = F,stringsAsFactors = F, encoding = "UTF-8",data.table = F) #stringsAsFactors = F, quote = ''
+    qString<-fread(file = file.path(folderpathSql,"pid_generic.sql"), sep = NULL, header = F, strip.white = F, check.names = F,stringsAsFactors = F, encoding = "UTF-8",data.table = F) #stringsAsFactors = F, quote = ''
     qString2<-paste(unlist(qString),collapse = '\n')
 
     q <- dbSendQuery(connection,
@@ -126,7 +128,7 @@ mysqlDatabaseUtilityClass$methods(
 
     q <- dbExecute(connection,"DROP TEMPORARY TABLE IF EXISTS t_link")
 
-    qString<-fread(file = file.path("MySQL","link_generic.sql"), sep = NULL, header = F, strip.white = F, check.names = F,stringsAsFactors = F, encoding = "UTF-8",data.table = F) #stringsAsFactors = F, quote = ''
+    qString<-fread(file = file.path(folderpathSql,"link_generic.sql"), sep = NULL, header = F, strip.white = F, check.names = F,stringsAsFactors = F, encoding = "UTF-8",data.table = F) #stringsAsFactors = F, quote = ''
     qString2<-paste(unlist(qString),collapse = '\n')
 
     q <- dbSendQuery(connection,

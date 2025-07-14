@@ -49,22 +49,23 @@ bioresourcerClass <- setRefClass("bioresourcer",
 
 
 bioresourcerClass$methods(
-  connectMysqlDAO=function(host, dbname, user, password, port=25060, group='mhbior'){
-    mysqlDAO<<-mysqlDatabaseUtilityClass(host=host, dbname=dbname, user=user, port=port, askForPassword =F, group=group, password=password)
+  connectMysqlDAO=function(host, dbname, user, password, port=25060, group='mhbior', folderpathSql="SQL"){
+    mysqlDAO<<-mysqlDatabaseUtilityClass(host=host, dbname=dbname, user=user, port=port, folderpathSql=folderpathSql, askForPassword =F, group=group, password=password)
     return(1)
   }
 )
 
 #library(ConfigParser)
 bioresourcerClass$methods(
-  connectMysqlDAOfromConfig=function(){
+  connectMysqlDAOfromConfig=function(folderpathSql="SQL"){
 
     connectMysqlDAO(
       host = config$data$mysqldb$host,
       dbname = config$data$mysqldb$database,
       user = config$data$mysqldb$user,
       port = as.integer(config$data$mysqldb$port),
-      password = config$data$mysqldb$password
+      password = config$data$mysqldb$password,
+      folderpathSql= folderpathSql
     )
   }
 )
