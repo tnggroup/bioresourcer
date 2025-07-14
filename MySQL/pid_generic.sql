@@ -1,4 +1,8 @@
+#152,331
+#rn,STUDY_ID,CONSENT_ACCEPTED,consent_form_response_created_at
+#SELECT * FROM t_consented_alias;
 
+/*THIS WILL NOT EXECUTE IN YOUR DB GUI - IS SUPPOSED TO BE RUN FROM A SCRIPT THAT CAN REPLACE ? PARAMETERS*/
 /*
  * --MySQL top of each group
 SELECT group_col, order_col FROM (
@@ -32,7 +36,7 @@ sex,
 gender,
 CONSENT_ACCEPTED,
 CONSENT_FORM_VERSION,
-CREATE_DATE, /*remove this, says Laura*/
+-- CREATE_DATE, /*remove this, says Laura*/
 -- destruction_request (value 1: request to destroy data, value 0: we are allowed to keep their data)
 -- withdraw_samples (value 1: request to destroy samples, value 0: we are allowed to keep their sample)
 UKLLC_STATUS,
@@ -47,24 +51,26 @@ FROM (
 	t_consented_alias.*,
 	ROW_NUMBER() OVER(PARTITION BY STUDY_ID ORDER BY CONSENT_ACCEPTED_is_null,CONSENT_ACCEPTED,consent_form_response_created_at,participant_id,rn) rnr
 	FROM
-	t_consented_alias #shared temporary table
+	t_consented_alias, #shared temporary table
+	(SELECT ? sidnumsetting) sidnumsetting_table
 	WHERE
 	(
-	  	? = 1
+		sidnumsetting = 1 #GLAD
 	  	AND study_id_num  = 1
 	  	AND STUDY_ID REGEXP '^GLAD[0-9]{6}$'
 	  	AND CONSENT_ACCEPTED < '2024-10-16' #Flag when CONSENT_ACCEPTED is null somehow?
 	)
-	/*
 	OR
 	(
-	  	? = 2 #EDGI
+		sidnumsetting = 2 #EDGI
 	  	AND study_id_num  = 2
 	  	AND STUDY_ID REGEXP '^EDGI[0-9]{6}$'
 	)
-*/
+
 	#CONSENT_ACCEPTED is now falling back on the cfr created date
 	#we should use the earliest consent date in case there are multiple for the same study
 ) ca
 WHERE rnr=1
 ORDER BY STUDY_ID;
+
+#SELECT * FROM t_pid;

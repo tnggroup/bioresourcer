@@ -14,13 +14,19 @@ bioresourcerClass <- setRefClass("bioresourcer",
 
                                         folderpathBioResourceData.NBC.raw = "character",
                                         folderpathBioResourceData.NBC.barcodeReports = "character",
-                                        folderpathBioResourceData.NBC.barcodeImports = "character"
+                                        folderpathBioResourceData.NBC.barcodeImports = "character",
+
+                                        config = "ANY",
+                                        mysqlDAO = "ANY"
                                       ),
                                       methods = list
                                       (
                                         #this is the constructor as per convention
-                                        initialize=function(nFolderpathBioResourceData,nCurrentUserTag="anon",nNThreads=3)
+                                        initialize=function(filepathConfig, nFolderpathBioResourceData=getwd(),nCurrentUserTag="anon",nNThreads=3)
                                         {
+                                          #Config
+                                          config<<-ConfigParser$new()
+                                          config$read(filepathConfig)
                                           #General
                                           currentUserTag <<- nCurrentUserTag
                                           folderpathBioResourceData <<- nFolderpathBioResourceData
@@ -39,6 +45,60 @@ bioresourcerClass <- setRefClass("bioresourcer",
                                         }
                                       )
 )
+
+
+
+bioresourcerClass$methods(
+  connectMysqlDAO=function(host, dbname, user, password, port=25060, group='mhbior'){
+    mysqlDAO<<-mysqlDatabaseUtilityClass(host=host, dbname=dbname, user=user, port=port, askForPassword =F, group=group, password=password)
+    return(1)
+  }
+)
+
+#library(ConfigParser)
+bioresourcerClass$methods(
+  connectMysqlDAOfromConfig=function(){
+
+    connectMysqlDAO(
+      host = config$data$mysqldb$host,
+      dbname = config$data$mysqldb$database,
+      user = config$data$mysqldb$user,
+      port = as.integer(config$data$mysqldb$port),
+      password = config$data$mysqldb$password
+    )
+  }
+)
+
+
+bioresourcerClass$methods(
+  exportSpark=function(){
+
+    connectMysqlDAOfromConfig()
+    mysqlDAO$executeSharedRoutines()
+
+    #GLAD
+    cFilename<-paste0("RV5_glad_pid_",format(Sys.time(), "%d%m%Y"),".csv")
+    pidGLAD<-mysqlDAO$selectStudyPID(1)
+    fwrite(pidGLAD,file = file.path(config$data$sftp$localdir,cFilename), col.names = T, row.names = F) #config$data$sftp$localdir
+    cFilename<-paste0("RV5_glad_sample_linkage_",format(Sys.time(), "%d%m%Y"),".csv")
+    linkGLAD<-mysqlDAO$selectStudyLink(1)
+    fwrite(linkGLAD,file = file.path(config$data$sftp$localdir,cFilename), col.names = T, row.names = F) #config$data$sftp$localdir
+
+    #EDGI
+    cFilename<-paste0("RV5_edgi_pid_",format(Sys.time(), "%d%m%Y"),".csv")
+    pidEDGI<-mysqlDAO$selectStudyPID(2)
+    fwrite(pidGLAD,file = file.path(config$data$sftp$localdir,cFilename), col.names = T, row.names = F) #config$data$sftp$localdir
+    cFilename<-paste0("RV5_edgi_sample_linkage_",format(Sys.time(), "%d%m%Y"),".csv")
+    linkEDGI<-mysqlDAO$selectStudyLink(2)
+    fwrite(linkEDGI,file = file.path(config$data$sftp$localdir,cFilename), col.names = T, row.names = F) #config$data$sftp$localdir
+
+    return(1)
+  }
+)
+
+#br<-bioresourcerClass("/Users/jakz/Documents/work_eclipse/nihr_data_xchange/export-config.ini")
+
+#br$exportSpark()
 
 # For tests, load these
 #library(data.table)

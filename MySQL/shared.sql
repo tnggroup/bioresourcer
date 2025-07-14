@@ -33,8 +33,8 @@ cf.version CONSENT_FORM_VERSION,
 p.created_at CREATE_DATE,
 -- destruction_request (value 1: request to destroy data, value 0: we are allowed to keep their data)
 -- withdraw_samples (value 1: request to destroy samples, value 0: we are allowed to keep their sample)
-w.llc_opt_out_outcome UKLLC_STATUS,	
-/* CASE w.can_access_medical_records 
+w.llc_opt_out_outcome UKLLC_STATUS,
+/* CASE w.can_access_medical_records
 		WHEN '1' THEN '1'
 		ELSE '0'
 END withdrawn,
@@ -59,24 +59,24 @@ s.id study_id_num,
 cf.id consent_form_id,
 cfr.id consent_form_response_id,
 cfr.created_at consent_form_response_created_at
-FROM 
+FROM
 mhbior.participants p
-LEFT JOIN mhbior.withdrawals w 
+LEFT JOIN mhbior.withdrawals w
 			ON p.id = w.participant_id
-LEFT JOIN mhbior.participant_study ps 
+LEFT JOIN mhbior.participant_study ps
    		    ON ps.participant_id = p.id
 LEFT JOIN mhbior.studies s
 			ON  s.id = ps.study_id
 LEFT JOIN mhbior.consent_form_responses cfr
 			ON cfr.participant_id  = p.id
-LEFT JOIN mhbior.participant_study ps2 
-            ON ( ps2.consent_form_response_id = cfr.id AND ps2.participant_id = p.id AND ps2.study_id = s.id)		
-LEFT JOIN mhbior.consent_forms cf 
+LEFT JOIN mhbior.participant_study ps2
+            ON ( ps2.consent_form_response_id = cfr.id AND ps2.participant_id = p.id AND ps2.study_id = s.id)
+LEFT JOIN mhbior.consent_forms cf
             ON ( cf.id = cfr.consent_form_id AND cf.study_id = s.id)
-LEFT JOIN mhbior.information_sheets is2 
-			ON ps.information_sheet_id = is2.id 
+LEFT JOIN mhbior.information_sheets is2
+			ON ps.information_sheet_id = is2.id
 CROSS JOIN JSON_TABLE( p.aliases, '$[*]' COLUMNS( alias_matched VARCHAR(255) PATH '$'  ) ) AS jt
-WHERE ( p.first_name NOT LIKE 'test%' OR p.last_name NOT LIKE 'test%') 
+WHERE ( p.first_name NOT LIKE 'test%' OR p.last_name NOT LIKE 'test%')
 AND jt.alias_matched IS NOT NULL
 AND p.account_type = 'Active'
 WINDOW w AS (ORDER BY jt.alias_matched,s.name,cf.id,cfr.id);

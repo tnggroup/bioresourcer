@@ -1,4 +1,3 @@
-
 CREATE TEMPORARY TABLE t_link
 (PRIMARY KEY t_link_pk (STUDY_ID,barcode))
 SELECT

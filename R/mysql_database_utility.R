@@ -41,8 +41,8 @@ mysqlDatabaseUtilityClass <- setRefClass("pgDatabaseUtility",
 
 # we can add more methods after creating the ref class (but not more fields!)
 
-#dbutil <- mysqlDatabaseUtilityClass(host="db-mysql-lon1-68182-do-user-8092310-0.b.db.ondigitalocean.com", dbname="mhbior", user="doadmin", port=25060, askForPassword =T, group='mhbior')
-#res<-dbutil$testFunction()
+# dbutil <- mysqlDatabaseUtilityClass(host="db-mysql-lon1-68182-do-user-8092310-0.b.db.ondigitalocean.com", dbname="mhbior", user="doadmin", port=25060, askForPassword =T, group='mhbior')
+# res<-dbutil$testFunction()
 # library(RMySQL)
 # library(DBI)
 # library(data.table)
@@ -65,15 +65,20 @@ mysqlDatabaseUtilityClass$methods(
 mysqlDatabaseUtilityClass$methods(
   executeSharedRoutines=function(){
 
+    q <- dbExecute(connection,"DROP TEMPORARY TABLE IF EXISTS t_consented_alias")
+
     qString<-fread(file = file.path("MySQL","shared.sql"), sep = NULL, header = F, strip.white = F, check.names = F,stringsAsFactors = F, encoding = "UTF-8",data.table = F) #stringsAsFactors = F, quote = ''
     qString2<-paste(unlist(qString),collapse = '\n')
 
-    q <- dbSendQuery(connection,
+    q <- dbExecute(connection,
                      qString2
     )
-    res<-dbFetch(q)
-    dbClearResult(q)
-    return(res)
+    # q <- dbSendQuery(connection,
+    #                  qString2
+    # )
+    # res<-dbFetch(q)
+    # dbClearResult(q)
+    return(q)
   }
 )
 
@@ -82,6 +87,7 @@ mysqlDatabaseUtilityClass$methods(
 
 mysqlDatabaseUtilityClass$methods(
   selectConsentedAlias=function(cohort,instance){
+
     q <- dbSendQuery(connection,
                      "SELECT * FROM t_consented_alias;"
     ) #list(cohort,instance)
@@ -94,16 +100,42 @@ mysqlDatabaseUtilityClass$methods(
 mysqlDatabaseUtilityClass$methods(
   selectStudyPID=function(studyIndexInt){
 
+    q <- dbExecute(connection,"DROP TEMPORARY TABLE IF EXISTS t_pid")
+
     qString<-fread(file = file.path("MySQL","pid_generic.sql"), sep = NULL, header = F, strip.white = F, check.names = F,stringsAsFactors = F, encoding = "UTF-8",data.table = F) #stringsAsFactors = F, quote = ''
     qString2<-paste(unlist(qString),collapse = '\n')
 
     q <- dbSendQuery(connection,
                      qString2,
-                     list(studyIndexInt)
+                     list(paste0("",studyIndexInt))
     )
 
     q <- dbSendQuery(connection,
                      "SELECT * FROM t_pid"
+    )
+
+
+    res<-dbFetch(q)
+    dbClearResult(q)
+    return(res)
+  }
+)
+
+mysqlDatabaseUtilityClass$methods(
+  selectStudyLink=function(studyIndexInt){
+
+    q <- dbExecute(connection,"DROP TEMPORARY TABLE IF EXISTS t_link")
+
+    qString<-fread(file = file.path("MySQL","link_generic.sql"), sep = NULL, header = F, strip.white = F, check.names = F,stringsAsFactors = F, encoding = "UTF-8",data.table = F) #stringsAsFactors = F, quote = ''
+    qString2<-paste(unlist(qString),collapse = '\n')
+
+    q <- dbSendQuery(connection,
+                     qString2,
+                     list(paste0("",studyIndexInt))
+    )
+
+    q <- dbSendQuery(connection,
+                     "SELECT * FROM t_link"
     )
 
 
@@ -127,7 +159,8 @@ mysqlDatabaseUtilityClass$methods(
 # dbClearResult(q)
 # View(res)
 
-#dbutil <- mysqlDatabaseUtilityClass(host="db-mysql-lon1-68182-do-user-8092310-0.b.db.ondigitalocean.com", dbname="mhbior", user="doadmin", port=25060, askForPassword =T, group='mhbior')
-#dbutil$executeSharedRoutines()
-#res<-dbutil$selectConsentedAlias()
-#res<-dbutil$selectStudyPID(1)
+# dbutil <- mysqlDatabaseUtilityClass(host="db-mysql-lon1-68182-do-user-8092310-0.b.db.ondigitalocean.com", dbname="mhbior", user="doadmin", port=25060, askForPassword =T, group='mhbior')
+# dbutil$executeSharedRoutines()
+# res<-dbutil$selectConsentedAlias()
+# res1<-dbutil$selectStudyPID(studyIndexInt = 1)
+# res2<-dbutil$selectStudyPID(studyIndexInt = 2)
