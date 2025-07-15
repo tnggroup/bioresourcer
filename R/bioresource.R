@@ -89,7 +89,7 @@ bioresourcerClass$methods(
     #EDGI
     cFilename<-paste0("RV5_edgi_pid_",format(Sys.time(), "%d%m%Y"),".csv")
     pidEDGI<-mysqlDAO$selectStudyPID(2)
-    fwrite(pidGLAD,file = file.path(config$data$sftp$localdir,cFilename), col.names = T, row.names = F) #config$data$sftp$localdir
+    fwrite(pidEDGI,file = file.path(config$data$sftp$localdir,cFilename), col.names = T, row.names = F) #config$data$sftp$localdir
     cFilename<-paste0("RV5_edgi_sample_linkage_",format(Sys.time(), "%d%m%Y"),".csv")
     linkEDGI<-mysqlDAO$selectStudyLink(2)
     fwrite(linkEDGI,file = file.path(config$data$sftp$localdir,cFilename), col.names = T, row.names = F) #config$data$sftp$localdir
